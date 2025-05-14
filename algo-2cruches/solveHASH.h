@@ -1,8 +1,17 @@
 #pragma once
 #include "baseSolve.h"
-#include <iostream>
 #include <unordered_set>
 #include <vector>
+#include <queue>
+
+namespace std {
+    template <>
+    struct hash<State> {
+        size_t operator()(const State& s) const {
+            return hash<int>()(s.first) ^ (hash<int>()(s.second) << 1);
+        }
+    };
+}
 
 class solveHASH : public baseSolve {
 public:
