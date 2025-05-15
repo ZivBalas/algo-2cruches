@@ -1,22 +1,22 @@
 #include "solveHASH.h"
 #include <iostream>
-#include <queue>
+#include <unordered_set>
 using namespace std;
 
 void solveHASH::run() {
-    cout << "Running solveHASH (Optimized Hash BFS)..." << endl;
+    vector<pair<State, vector<Operation>>> queue;
     State start = { 0, 0 };
-    queue<pair<State, vector<baseSolve::Operation>>> q;
-    q.push(make_pair(start, vector<baseSolve::Operation>()));
+    queue.push_back({ start, {} });
     visited.insert(start);
 
-    while (!q.empty()) {
-        pair<State, vector<baseSolve::Operation>> front = q.front();
-        q.pop();
-        State current = front.first;
-        vector<baseSolve::Operation> path = front.second;
+    while (!queue.empty()) {
+        pair<State, vector<Operation>> currentPair = queue.front();
+        queue.erase(queue.begin());
 
-        if (current.large == W && current.small == 0) {
+        State current = currentPair.first;
+        vector<Operation> path = currentPair.second;
+
+        if (current.first == W && current.second == 0) {
             cout << "Number of operations: " << path.size() << endl;
             for (int i = 0; i < path.size(); ++i) {
                 cout << i + 1 << ". ";
@@ -33,16 +33,16 @@ void solveHASH::run() {
             return;
         }
 
-        vector<pair<State, baseSolve::Operation>> neighbors = calculateAdjList(current);
+        vector<pair<State, Operation>> neighbors = calculateAdjList(current);
         for (const auto& pair : neighbors) {
             State neighbor = pair.first;
-            baseSolve::Operation op = pair.second;
+            Operation op = pair.second;
 
             if (visited.find(neighbor) == visited.end()) {
                 visited.insert(neighbor);
-                vector<baseSolve::Operation> newPath = path;
+                vector<Operation> newPath = path;
                 newPath.push_back(op);
-                q.push(make_pair(neighbor, newPath));
+                queue.push_back({ neighbor, newPath });
             }
         }
     }
@@ -50,19 +50,16 @@ void solveHASH::run() {
     cout << "No solution." << endl;
 }
 
-std::vector<std::pair<State, baseSolve::Operation>> solveHASH::calculateAdjList(const State& current) {
-    vector<pair<State, baseSolve::Operation>> neighbors;
-    int large = current.large;
-    int small = current.small;
+vector<pair<State, baseSolve::Operation>> solveHASH::calculateAdjList(const State& current) {
+    vector<pair<State, Operation>> neighbors;
+    int large = current.first;
+    int small = current.second;
 
-    if (large < L)
-        neighbors.push_back({ {L, small}, FILL_LARGE });
-    if (small < S)
-        neighbors.push_back({ {large, S}, FILL_SMALL });
-    if (large > 0)
-        neighbors.push_back({ {0, small}, EMPTY_LARGE });
-    if (small > 0)
-        neighbors.push_back({ {large, 0}, EMPTY_SMALL });
+    if (large < L) neighbors.push_back({ {L, small}, FILL_LARGE });
+    if (small < S) neighbors.push_back({ {large, S}, FILL_SMALL });
+    if (large > 0) neighbors.push_back({ {0, small}, EMPTY_LARGE });
+    if (small > 0) neighbors.push_back({ {large, 0}, EMPTY_SMALL });
+
     if (large > 0 && small < S) {
         int pour = min(large, S - small);
         neighbors.push_back({ {large - pour, small + pour}, TRANSFER_LARGE_TO_SMALL });

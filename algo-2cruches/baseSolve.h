@@ -17,6 +17,7 @@ public:
    
     baseSolve(int l, int s, int w) : L(l), S(s), W(w) {}
     virtual void run() = 0;
+    
     virtual ~baseSolve() = default;
 
 protected:
