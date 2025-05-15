@@ -2,7 +2,7 @@
 
 int main() {
     Application app;
-    app.start(); // זה ינהל את הכל: קלט, יצירת Solver והרצה
+    app.start(); // זה ינהל את הכל: קלט, יצירת Solver והרצהh
     return 0;
 }
 
