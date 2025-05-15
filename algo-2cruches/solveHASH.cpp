@@ -18,6 +18,7 @@ void solveHASH::run() {
 
         if (current.first == W && current.second == 0) {
             cout << "Number of operations: " << path.size() << endl;
+            cout << "Operations: " << endl;
             for (int i = 0; i < path.size(); ++i) {
                 cout << i + 1 << ". ";
                 switch (path[i]) {
@@ -25,8 +26,8 @@ void solveHASH::run() {
                 case FILL_SMALL: cout << "Fill small jug"; break;
                 case EMPTY_LARGE: cout << "Empty large jug"; break;
                 case EMPTY_SMALL: cout << "Empty small jug"; break;
-                case TRANSFER_LARGE_TO_SMALL: cout << "Transfer large to small"; break;
-                case TRANSFER_SMALL_TO_LARGE: cout << "Transfer small to large"; break;
+                case TRANSFER_LARGE_TO_SMALL: cout << "Transfer from large jug to small jug"; break;
+                case TRANSFER_SMALL_TO_LARGE: cout << "Transfer from small jug to large jug"; break;
                 }
                 cout << endl;
             }

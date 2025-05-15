@@ -9,9 +9,9 @@ void Application::start() {
     cout << "Enter L S W: ";
     cin >> L >> S >> W;
 
-    if (L <= S || W > L) {
-        cerr << "Invalid input" << endl;
-        exit(1);
+    if (L <= 0 || S <= 0 || W > L || S >= L) {
+        cerr << "Invalid input." << endl;
+        return;
     }
 
     cout << "Enter version (1 or 2): ";
@@ -28,7 +28,7 @@ void Application::start() {
         solver = new solveHASH(L, S, W);
     }
     else {
-        cerr << "Invalid version" << endl;
+        cerr << "Invalid input." << endl;
         exit(1);
     }
 

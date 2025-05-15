@@ -6,6 +6,5 @@ int main() {
     return 0;
 }
 
-//// מה לתקן: צריך להוסיף 2 משתנים לבסיס שהם: זמן+גרסה
-//// צריך שבעת ההורשה של הבסיס לפתח אחד כזה כבר
-//// לתקן 
+// need to add  comments to the code
+// need to over the code and understand it all
