@@ -19,6 +19,6 @@ public:
     void run() override;
 
 private:
-    std::vector<std::pair<State, Operation>> calculateAdjList(const State& current);
-    std::unordered_set<State> visited;
+    std::vector<std::pair<State, Operation>> calculateAdjList(const State& current);// calculate the adjacent list for a given state
+    std::unordered_set<State> visited;// set to keep track of visited states
 };

@@ -1,14 +1,17 @@
-
 #include "solveBFS.h"
 
-
-void solveBFS::MakeEmptyGraph() {
-    adjList.clear();
-    adjList.resize(L + 1, vector<vector<pair<State, Operation>>>(S + 1));
+void solveBFS::MakeEmptyGraph() {// initialize the graph
+    int total = (L + 1) * (S + 1);
+    adjListFlat.clear();
+    adjListFlat.resize(total);
+    distFlat.assign(total, INT_MAX);
+    parentFlat.assign(total, { -1, -1 });
+    opUsedFlat.assign(total, FILL_LARGE);
 }
 
 void solveBFS::AddEdge(int large, int small) {
-    auto& neighbors = adjList[large][small];
+    int idx = index(large, small);
+    auto& neighbors = adjListFlat[idx];
     neighbors.clear();
 
     if (large < L) neighbors.emplace_back(State{ L, small }, FILL_LARGE);
@@ -26,21 +29,19 @@ void solveBFS::AddEdge(int large, int small) {
     }
 }
 
-void solveBFS::BuildGraph() {
+void solveBFS::BuildGraph() {// add the possible edges to the graph
     for (int i = 0; i <= L; ++i)
         for (int j = 0; j <= S; ++j)
             AddEdge(i, j);
 }
 
 list<pair<State, baseSolve::Operation>> solveBFS::GetAdjList(const State& u) {
-    int large = u.first;
-    int small = u.second;
-    auto copy = adjList[large][small];
+    auto copy = adjListFlat[index(u.first, u.second)];
     sort(copy.begin(), copy.end());
     return list<pair<State, Operation>>(copy.begin(), copy.end());
 }
 
-string solveBFS::operationToString(Operation op) {
+string solveBFS::operationToString(Operation op) {// convert the operation to string
     switch (op) {
     case FILL_LARGE: return "Fill large jug";
     case FILL_SMALL: return "Fill small jug";
@@ -52,19 +53,16 @@ string solveBFS::operationToString(Operation op) {
     }
 }
 
-bool solveBFS::BFS() {
-    dist.assign(L + 1, vector<int>(S + 1, INT_MAX));
-    parent.assign(L + 1, vector<State>(S + 1, { -1, -1 }));
-    opUsed.assign(L + 1, vector<Operation>(S + 1, FILL_LARGE));
+bool solveBFS::BFS() {// BFS algorithm to find the shortest path
     queue<State> q;
-
-    dist[0][0] = 0;
+    distFlat[index(0, 0)] = 0;
     q.emplace(0, 0);
 
     bool found = false;
     while (!q.empty()) {
         State curr = q.front();
         q.pop();
+        int currIdx = index(curr.first, curr.second);
 
         if (curr.first == W && curr.second == 0) {
             found = true;
@@ -72,13 +70,14 @@ bool solveBFS::BFS() {
         }
 
         for (const auto& pair : GetAdjList(curr)) {
-            State nb = pair.first;
-            Operation op = pair.second;
+            State nb = pair.first;// pair <int,int>
+            Operation op = pair.second;// the operation
+            int nbIdx = index(nb.first, nb.second);
 
-            if (dist[nb.first][nb.second] == INT_MAX) {
-                dist[nb.first][nb.second] = dist[curr.first][curr.second] + 1;
-                parent[nb.first][nb.second] = curr;
-                opUsed[nb.first][nb.second] = op;
+            if (distFlat[nbIdx] == INT_MAX) {// if the state is not visited
+                distFlat[nbIdx] = distFlat[currIdx] + 1;
+                parentFlat[nbIdx] = curr;
+                opUsedFlat[nbIdx] = op;
                 q.push(nb);
             }
         }
@@ -89,18 +88,19 @@ bool solveBFS::BFS() {
         return false;
     }
 
-    vector<Operation> actions;
+    vector<Operation> actions;// save the step from the end to the beginning
     State step = { W, 0 };
     while (!(step.first == 0 && step.second == 0)) {
-        State prev = parent[step.first][step.second];
-        actions.push_back(opUsed[step.first][step.second]);
+        int idx = index(step.first, step.second);
+        State prev = parentFlat[idx];
+        actions.push_back(opUsedFlat[idx]);
         step = prev;
     }
 
-    reverse(actions.begin(), actions.end());
+    reverse(actions.begin(), actions.end());// order the step from the beginning to the end
 
-    cout << "Number of operations: " << actions.size() << endl;
-    cout << "Operations: "<< endl;
+    cout << "Number of operations: " << actions.size() << endl;// print the answer organize
+    cout << "operations:" << endl;
     for (size_t i = 0; i < actions.size(); ++i) {
         cout << i + 1 << ". " << operationToString(actions[i]) << endl;
     }
@@ -108,7 +108,7 @@ bool solveBFS::BFS() {
     return true;
 }
 
-void solveBFS::run() {
+void solveBFS::run() {// MAIN LOOP OF THIS SOLVE
     MakeEmptyGraph();
     BuildGraph();
     BFS();

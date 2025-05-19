@@ -2,11 +2,11 @@
 #include <iostream>
 #include <utility>
 #include "Application.h"
-using State = std::pair<int, int>; // מצב מייצג זוג כמויות (כד גדול, כד קטן)
+using State = std::pair<int, int>; // represent the state of the jugs (large, small) as a pair of integers
 
 class baseSolve {
 public:
-    enum Operation {
+    enum Operation {// represent the operations that can be performed on the jugs
         FILL_LARGE,
         FILL_SMALL,
         EMPTY_LARGE,

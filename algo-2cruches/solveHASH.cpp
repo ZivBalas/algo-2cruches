@@ -3,7 +3,7 @@
 #include <unordered_set>
 using namespace std;
 
-void solveHASH::run() {
+void solveHASH::run() {// here every new vertex we add his adjecent list to the queue in real time.
     vector<pair<State, vector<Operation>>> queue;
     State start = { 0, 0 };
     queue.push_back({ start, {} });
@@ -51,7 +51,7 @@ void solveHASH::run() {
     cout << "No solution." << endl;
 }
 
-vector<pair<State, baseSolve::Operation>> solveHASH::calculateAdjList(const State& current) {
+vector<pair<State, baseSolve::Operation>> solveHASH::calculateAdjList(const State& current) {//creat the adjcent list for the curren vertex
     vector<pair<State, Operation>> neighbors;
     int large = current.first;
     int small = current.second;
