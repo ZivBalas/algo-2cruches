@@ -1,85 +1,83 @@
-#pragma once
 #include "solveBFS.h"
-#include "baseSolve.h"
-#include <iostream>
-#include <vector>
-#include <queue>
-#include <list>
-#include <string>
-#include <climits>
-#include <algorithm>
 
-
-void solveBFS::MakeEmptyGraph() {
-    adjList.clear();
-    adjList.resize(L + 1, vector<vector<State>>(S + 1));
+void solveBFS::MakeEmptyGraph() {// initialize the graph
+    int total = (L + 1) * (S + 1);
+    adjListFlat.clear();
+    adjListFlat.resize(total);
+    distFlat.assign(total, INT_MAX);
+    parentFlat.assign(total, { -1, -1 });
+    opUsedFlat.assign(total, FILL_LARGE);
 }
 
 void solveBFS::AddEdge(int large, int small) {
-    auto& neighbors = adjList[large][small];
+    int idx = index(large, small);
+    auto& neighbors = adjListFlat[idx];
     neighbors.clear();
 
-    if (large < L) neighbors.emplace_back(L, small);
-    if (small < S) neighbors.emplace_back(large, S);
-    if (large > 0) neighbors.emplace_back(0, small);
-    if (small > 0) neighbors.emplace_back(large, 0);
+    if (large < L) neighbors.emplace_back(State{ L, small }, FILL_LARGE);
+    if (small < S) neighbors.emplace_back(State{ large, S }, FILL_SMALL);
+    if (large > 0) neighbors.emplace_back(State{ 0, small }, EMPTY_LARGE);
+    if (small > 0) neighbors.emplace_back(State{ large, 0 }, EMPTY_SMALL);
 
     if (small > 0 && large < L) {
         int t = min(L - large, small);
-        neighbors.emplace_back(large + t, small - t);
+        neighbors.emplace_back(State{ large + t, small - t }, TRANSFER_SMALL_TO_LARGE);
     }
     if (large > 0 && small < S) {
         int t = min(S - small, large);
-        neighbors.emplace_back(large - t, small + t);
+        neighbors.emplace_back(State{ large - t, small + t }, TRANSFER_LARGE_TO_SMALL);
     }
 }
 
-void solveBFS::BuildGraph() {
+void solveBFS::BuildGraph() {// add the possible edges to the graph
     for (int i = 0; i <= L; ++i)
         for (int j = 0; j <= S; ++j)
             AddEdge(i, j);
 }
 
-list<State> solveBFS::GetAdjList(const State& u) {
-    int large = u.first;
-    int small = u.second;
-    auto copy = adjList[large][small];
+list<pair<State, baseSolve::Operation>> solveBFS::GetAdjList(const State& u) {
+    auto copy = adjListFlat[index(u.first, u.second)];
     sort(copy.begin(), copy.end());
-    return list<State>(copy.begin(), copy.end());
+    return list<pair<State, Operation>>(copy.begin(), copy.end());
 }
 
-string solveBFS::getOperationDesc(const State& from, const State& to) {
-    if (from.first < to.first && from.second == to.second) return "Fill large jug";
-    if (from.first == to.first && from.second < to.second) return "Fill small jug";
-    if (from.first > to.first && from.second == to.second) return "Empty large jug";
-    if (from.first == to.first && from.second > to.second) return "Empty small jug";
-    if (from.first > to.first && from.second < to.second) return "Transfer large to small";
-    if (from.first < to.first && from.second > to.second) return "Transfer small to large";
-    return "Unknown operation";
+string solveBFS::operationToString(Operation op) {// convert the operation to string
+    switch (op) {
+    case FILL_LARGE: return "Fill large jug";
+    case FILL_SMALL: return "Fill small jug";
+    case EMPTY_LARGE: return "Empty large jug";
+    case EMPTY_SMALL: return "Empty small jug";
+    case TRANSFER_LARGE_TO_SMALL: return "Transfer from large jug to small jug";
+    case TRANSFER_SMALL_TO_LARGE: return "Transfer from small jug to large jug";
+    default: return "Unknown operation";
+    }
 }
 
-bool solveBFS::BFS() {
-    dist.assign(L + 1, vector<int>(S + 1, INT_MAX));
-    vector<vector<State>> parent(L + 1, vector<State>(S + 1, { -1, -1 }));
+bool solveBFS::BFS() {// BFS algorithm to find the shortest path
     queue<State> q;
-
-    dist[0][0] = 0;
+    distFlat[index(0, 0)] = 0;
     q.emplace(0, 0);
 
     bool found = false;
     while (!q.empty()) {
         State curr = q.front();
         q.pop();
+        int currIdx = index(curr.first, curr.second);
 
         if (curr.first == W && curr.second == 0) {
             found = true;
             break;
         }
 
-        for (const auto& nb : GetAdjList(curr)) {
-            if (dist[nb.first][nb.second] == INT_MAX) {
-                dist[nb.first][nb.second] = dist[curr.first][curr.second] + 1;
-                parent[nb.first][nb.second] = curr;
+        for (const auto& pair : GetAdjList(curr)) {
+            State nb = pair.first;// pair <int,int>
+            Operation op = pair.second;// the operation
+            int nbIdx = index(nb.first, nb.second);
+
+            if (distFlat[nbIdx] == INT_MAX) {// if the state is not visited
+                distFlat[nbIdx] = distFlat[currIdx] + 1;
+                parentFlat[nbIdx] = curr;
+                opUsedFlat[nbIdx] = op;
                 q.push(nb);
             }
         }
@@ -90,24 +88,27 @@ bool solveBFS::BFS() {
         return false;
     }
 
-    vector<State> path;
+    vector<Operation> actions;// save the step from the end to the beginning
     State step = { W, 0 };
     while (!(step.first == 0 && step.second == 0)) {
-        path.push_back(step);
-        step = parent[step.first][step.second];
+        int idx = index(step.first, step.second);
+        State prev = parentFlat[idx];
+        actions.push_back(opUsedFlat[idx]);
+        step = prev;
     }
-    path.push_back({ 0, 0 });
-    reverse(path.begin(), path.end());
 
-    cout << "Number of operations: " << path.size() - 1 << endl;
-    for (size_t i = 1; i < path.size(); ++i) {
-        cout << i << ". " << getOperationDesc(path[i - 1], path[i]) << endl;
+    reverse(actions.begin(), actions.end());// order the step from the beginning to the end
+
+    cout << "Number of operations: " << actions.size() << endl;// print the answer organize
+    cout << "operations:" << endl;
+    for (size_t i = 0; i < actions.size(); ++i) {
+        cout << i + 1 << ". " << operationToString(actions[i]) << endl;
     }
 
     return true;
 }
 
-void solveBFS::run() {
+void solveBFS::run() {// MAIN LOOP OF THIS SOLVE
     MakeEmptyGraph();
     BuildGraph();
     BFS();

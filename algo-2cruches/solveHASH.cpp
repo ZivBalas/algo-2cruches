@@ -3,7 +3,7 @@
 #include <unordered_set>
 using namespace std;
 
-void solveHASH::run() {
+void solveHASH::run() {// here every new vertex we add his adjecent list to the queue in real time.
     vector<pair<State, vector<Operation>>> queue;
     State start = { 0, 0 };
     queue.push_back({ start, {} });
@@ -18,6 +18,7 @@ void solveHASH::run() {
 
         if (current.first == W && current.second == 0) {
             cout << "Number of operations: " << path.size() << endl;
+            cout << "Operations: " << endl;
             for (int i = 0; i < path.size(); ++i) {
                 cout << i + 1 << ". ";
                 switch (path[i]) {
@@ -25,8 +26,8 @@ void solveHASH::run() {
                 case FILL_SMALL: cout << "Fill small jug"; break;
                 case EMPTY_LARGE: cout << "Empty large jug"; break;
                 case EMPTY_SMALL: cout << "Empty small jug"; break;
-                case TRANSFER_LARGE_TO_SMALL: cout << "Transfer large to small"; break;
-                case TRANSFER_SMALL_TO_LARGE: cout << "Transfer small to large"; break;
+                case TRANSFER_LARGE_TO_SMALL: cout << "Transfer from large jug to small jug"; break;
+                case TRANSFER_SMALL_TO_LARGE: cout << "Transfer from small jug to large jug"; break;
                 }
                 cout << endl;
             }
@@ -50,7 +51,7 @@ void solveHASH::run() {
     cout << "No solution." << endl;
 }
 
-vector<pair<State, baseSolve::Operation>> solveHASH::calculateAdjList(const State& current) {
+vector<pair<State, baseSolve::Operation>> solveHASH::calculateAdjList(const State& current) {//creat the adjcent list for the curren vertex
     vector<pair<State, Operation>> neighbors;
     int large = current.first;
     int small = current.second;

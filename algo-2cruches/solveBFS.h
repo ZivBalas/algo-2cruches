@@ -17,13 +17,17 @@ public:
     void run() override;
 
 private:
-    vector<vector<vector<State>>> adjList;  // גרף: לכל מצב, רשימת שכנים
-    vector<vector<int>> dist;               // מטריצת מרחקים
+    vector<vector<pair<State, Operation>>> adjListFlat; // its a vector that contain the vertex , and every vertex contain a list of pairs (state, operation)
+    vector<int> distFlat;                                // save the distanse from the start state to every state
+    vector<State> parentFlat;                            // save the perent for every state
+    vector<Operation> opUsedFlat;                        // save the operation that was used to get to the state
+
+    int index(int large, int small) const { return large * (S + 1) + small; }// make flat vactor from the 2D matrix
 
     void MakeEmptyGraph();
     void BuildGraph();
     void AddEdge(int large, int small);
-    list<State> GetAdjList(const State& u);
+    list<pair<State, Operation>> GetAdjList(const State& u);
     bool BFS();
-    string getOperationDesc(const State& from, const State& to);
+    string operationToString(Operation op);
 };
